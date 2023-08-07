@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - mongodb_data_container:/data/db
+      - .:/app
+    ports:
+      - "27017:27017"
+  scrapy_bash:
+    build:
+      context: .
+      args:
+        UID: "1000"
+        GID: "1000"
+    volumes:
+      - .:/home/nonroot/app
+    command: /bin/bash
+    working_dir: /home/nonroot/app/epicerie
+    depends_on:
+      - mongodb
+  scrapy_shell:
+    build:
+      context: .
+      args:
+        UID: "1000"
+        GID: "1000"
+    volumes:
+      - .:/home/nonroot/app
+    command: scrapy shell
+    working_dir: /home/nonroot/app/epicerie
+  scrapy_crawl:
+    build:
+      context: .
+      args:
+        UID: "1000"
+        GID: "1000"
+    volumes:
+      - .:/home/nonroot/app
+    working_dir: /home/nonroot/app/epicerie
+    command: scrapy crawl metroSpider &> crawl.log
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data_container:
